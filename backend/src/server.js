@@ -6,10 +6,12 @@ dotenv.config();
 const PORT = process.env.PORT || 5001;
 const app = express();
 
-connectDB();
+app.use(express.json()); // de express co the doc duoc req.body
 
 app.use("/api/tasks", taskRoute);
 
-app.listen(PORT, () => {
-  console.log("Server bat dau tren cong {PORT}");
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server bat dau tren cong ${PORT}`);
+  });
 });
