@@ -5,8 +5,10 @@ import TaskList from "../components/TaskList.jsx";
 import TaskListPagination from "../components/TaskListPagination.jsx";
 import Footer from "../components/Footer.jsx";
 import DateTimeFilter from "@/components/DateTimeFilter";
+import { useState } from "react";
 
 export default function HomePage() {
+  const [taskBuffer, setTaskBuffer] = useState([]);
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] relative">
       {/* Soft Morning Mist Background */}
