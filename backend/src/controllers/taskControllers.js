@@ -3,8 +3,22 @@ import Task from "../models/Task.js";
 export const getAllTask = async (req, res) => {
   // async de doi ket qua tu CSDL
   try {
-    const tasks = await Task.find().sort({ createdAt: "desc" }); // Lay tat ca nhiem vu va sap xep theo createdAt giam dan
-    res.status(200).json(tasks); // status 200: thanh cong
+    const result = await Task.aggregate([
+      {
+        $facet: {
+          tasks: [{ $sort: { createdAt: -1 } }],
+          activeCount: [{ $match: { status: "active" } }, { $count: "count" }],
+          completedCount: [
+            { $match: { status: "completed" } },
+            { $count: "count" },
+          ],
+        },
+      },
+    ]);
+    const tasks = result[0].tasks;
+    const activeCount = result[0].activeCount[0]?.count || 0; // neu khong co thi tra ve 0
+    const completedCount = result[0].completedCount[0]?.count || 0;
+    res.status(200).json({ tasks, activeCount, completedCount }); // status 200: thanh cong
   } catch (error) {
     console.error("Loi khi lay danh sach nhiem vu:", error);
     res.status(500).json({ message: "Loi server" }); // status 500: loi server
@@ -13,15 +27,22 @@ export const getAllTask = async (req, res) => {
 
 export const createTask = async (req, res) => {
   try {
-    const { title } = req.body; // Lay title tu req.body va req.body la mot doi tuong
-    const task = new Task({ title }); // Tao mot nhiem vu moi voi title
-    const newTask = await task.save(); // Luu nhiem vu moi vao CSDL
-    res.status(201).json(newTask); // status 201: da tao thanh cong
+    const { title, status } = req.body;
+
+    // Nếu không gửi status, mặc định là 'active'
+    const task = new Task({
+      title,
+      status: status || "active",
+    });
+
+    const newTask = await task.save();
+    res.status(201).json(newTask);
   } catch (error) {
-    console.error("Loi khi tao nhiem vu:", error);
-    res.status(500).json({ message: "Loi server" });
+    console.error("Lỗi khi tạo nhiệm vụ:", error);
+    res.status(500).json({ message: "Lỗi server" });
   }
 };
+
 export const updateTask = async (req, res) => {
   try {
     const { title, status, completeAt } = req.body;

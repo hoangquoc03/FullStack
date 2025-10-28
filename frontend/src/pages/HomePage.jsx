@@ -5,10 +5,30 @@ import TaskList from "../components/TaskList.jsx";
 import TaskListPagination from "../components/TaskListPagination.jsx";
 import Footer from "../components/Footer.jsx";
 import DateTimeFilter from "@/components/DateTimeFilter";
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import api from "../lib/axios.js";
 export default function HomePage() {
   const [taskBuffer, setTaskBuffer] = useState([]);
+  const [activeTaskCount, setActiveTaskCount] = useState(0);
+  const [completedTaskCount, setCompletedTaskCount] = useState(0);
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+  const fetchTasks = async () => {
+    try {
+      const res = await api.get("/tasks");
+      setTaskBuffer(res.data.tasks);
+      setActiveTaskCount(res.data.activeCount);
+      setCompletedTaskCount(res.data.completedCount);
+    } catch (error) {
+      console.error("Lỗi xảy ra khi truy xuất tasks:", error);
+      toast.error("Lỗi xảy ra khi truy xuất tasks.");
+    }
+  };
+  const handleTaskChanged = () => {
+    fetchTasks(); // Tai lai danh sach nhiem vu khi co thay doi
+  };
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] relative">
       {/* Soft Morning Mist Background */}
@@ -29,11 +49,18 @@ export default function HomePage() {
         }}
       />
       <div className="container pt-8 mx-auto relative z-10">
-        <div className="ư-full max-w-2xl p-6 mx-auto space-y-6">
+        <div className="w-full max-w-2xl p-6 mx-auto space-y-6">
           <Header />
-          <AddTask />
-          <StatsAndFilters />
-          <TaskList />
+          <AddTask handleNewTaskAdded={handleTaskChanged} />
+          <StatsAndFilters
+            activeTaskCount={activeTaskCount}
+            completedTaskCount={completedTaskCount}
+          />
+          <TaskList
+            filteredTasks={taskBuffer}
+            handleTaskChanged={handleTaskChanged}
+          />
+
           <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
             <TaskListPagination />
             <DateTimeFilter />
