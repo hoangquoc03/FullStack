@@ -1,9 +1,31 @@
 import Task from "../models/Task.js";
 
 export const getAllTask = async (req, res) => {
+  const { filter = "today" } = req.query;
+  const now = new Date();
+  let startDate;
+  switch (filter) {
+    case "today":
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      break;
+    case "this_week":
+      const firstDayOfWeek = now.getDate() - now.getDay();
+      startDate = new Date(now.getFullYear(), now.getMonth(), firstDayOfWeek);
+      break;
+    case "this_month":
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      break;
+    case "all":
+      startDate = null;
+      break;
+    default:
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+  const query = startDate ? { createdAt: { $gte: startDate } } : {};
   // async de doi ket qua tu CSDL
   try {
     const result = await Task.aggregate([
+      { $match: query },
       {
         $facet: {
           tasks: [{ $sort: { createdAt: -1 } }],
