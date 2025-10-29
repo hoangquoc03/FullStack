@@ -8,6 +8,7 @@ export default function StatsAndFilters({
   completedTaskCount = 0,
   activeTaskCount = 0,
   filter = "all",
+  onFilterChange,
 }) {
   return (
     <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -26,6 +27,7 @@ export default function StatsAndFilters({
             variant={filter === key ? "default" : "ghost"}
             size="sm"
             className="capitalize flex items-center gap-2"
+            onClick={() => onFilterChange(key)}
           >
             <Filter className="size-4" />
             {FilterType[key]}

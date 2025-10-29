@@ -13,6 +13,7 @@ export default function HomePage() {
   const [activeTaskCount, setActiveTaskCount] = useState(0);
   const [completedTaskCount, setCompletedTaskCount] = useState(0);
   const [dateQuery, setDateQuery] = useState("today");
+  const [filter, setFilter] = useState("all");
   useEffect(() => {
     fetchTasks();
   }, [dateQuery]);
@@ -30,6 +31,12 @@ export default function HomePage() {
   const handleTaskChanged = () => {
     fetchTasks(); // Tai lai danh sach nhiem vu khi co thay doi
   };
+  const filteredTasks = taskBuffer.filter((task) => {
+    // taskBuffer da duoc loc theo dateQuery
+    if (filter === "active") return !task.completed;
+    if (filter === "completed") return task.completed;
+    return true; // all
+  });
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] relative">
       {/* Soft Morning Mist Background */}
@@ -56,9 +63,11 @@ export default function HomePage() {
           <StatsAndFilters
             activeTaskCount={activeTaskCount}
             completedTaskCount={completedTaskCount}
+            filter={filter}
+            onFilterChange={setFilter}
           />
           <TaskList
-            filteredTasks={taskBuffer}
+            filteredTasks={filteredTasks}
             handleTaskChanged={handleTaskChanged}
           />
 
